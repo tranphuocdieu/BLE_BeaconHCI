@@ -1,0 +1,10 @@
+{
+  "source": {
+    "sourceType": "STM32CubeMX"
+  },
+  "board": "NUCLEO-WBA65RI",
+  "device": "STM32WBA65RIV6",
+  "core": "Cortex-M33",
+  "order": 0,
+  "toolchain": "GCC"
+}
