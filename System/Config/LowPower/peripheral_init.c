@@ -96,13 +96,17 @@ void MX_StandbyExit_PeripheralInit(void)
   memset(&hramcfg_SRAM1, 0, sizeof(hramcfg_SRAM1));
   memset(&handle_GPDMA1_Channel1, 0, sizeof(handle_GPDMA1_Channel1));
   memset(&handle_GPDMA1_Channel0, 0, sizeof(handle_GPDMA1_Channel0));
+#if (CFG_LOG_SUPPORTED == 1)
   memset(&huart1, 0, sizeof(huart1));
+#endif
 
   MX_GPIO_Init();
   MX_GPDMA1_Init();
   MX_RAMCFG_Init();
   MX_ICACHE_Init();
+#if (CFG_LOG_SUPPORTED == 1)
   MX_USART1_UART_Init();
+#endif
 
   /* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
 
