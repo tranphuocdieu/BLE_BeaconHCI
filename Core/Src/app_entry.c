@@ -38,7 +38,6 @@
 #include "app_sys.h"
 #include "otp.h"
 #include "scm.h"
-#include "pka_ctrl.h"
 #if(CFG_RT_DEBUG_DTB == 1)
 #include "RTDebug_dtb.h"
 #endif /* CFG_RT_DEBUG_DTB */
@@ -116,9 +115,6 @@ static AMM_InitParameters_t ammInitConfig =
   .VirtualMemoryNumber = CFG_AMM_VIRTUAL_MEMORY_NUMBER,
   .p_VirtualMemoryConfigList = vmConfig
 };
-
-static uint8_t PkaMut = 0u;
-static uint8_t EndOfProcSem = 0u;
 
 /* USER CODE BEGIN PV */
 
@@ -256,8 +252,8 @@ static void System_Init( void )
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN7_HIGH_3);
 
 #if (CFG_LOG_SUPPORTED != 0)
+  /* Initialize the UART used for logs */
   MX_USART1_UART_Init();
-
   /* Initialize the logs ( using the USART ) */
   Log_Module_Init( Log_Module_Config );
 
@@ -333,6 +329,11 @@ static void SystemPower_Config(void)
   }
 #endif /* CFG_DEBUGGER_LEVEL */
 
+#if (CFG_DEBUGGER_LEVEL > 1)
+  LL_DBGMCU_EnableDBGStandbyMode();
+  LL_DBGMCU_EnableDBGStopMode();
+#endif /* CFG_DEBUGGER_LEVEL */
+
 #if (CFG_LPM_LEVEL != 0)
   /* Initialize low Power Manager. By default enabled */
   UTIL_LPM_Init();
@@ -358,9 +359,7 @@ static void SystemPower_Config(void)
 static void APPE_RNG_Init(void)
 {
   HW_RNG_SetPoolThreshold(CFG_HW_RNG_POOL_THRESHOLD);
-  HW_RNG_Init();
   HW_RNG_Start();
-
   /* Register Random Number Generator task */
   UTIL_SEQ_RegTask(1U << CFG_TASK_HW_RNG, UTIL_SEQ_RFU, (void (*)(void))HW_RNG_Process);
 }
@@ -419,7 +418,7 @@ void UTIL_SEQ_PreIdle( void )
 #endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
 #endif /* (CFG_LPM_STOP2_SUPPORTED == 1) */
   {
-    APP_SYS_BLE_EnterDeepSleep();
+    APP_SYS_EnterDeepSleep();
   }
 #endif /* ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)) */
   LL_RCC_ClearResetFlags();
@@ -564,86 +563,6 @@ void Serial_CMD_Interpreter_CmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferS
 }
 
 #endif /* (CFG_LOG_SUPPORTED != 0) */
-
-int PKACTRL_MutexTake(void)
-{
-  int error = 0;
-
-  /* Check if mutex is available */
-  if (0u != PkaMut)
-  {
-    /* Clear flag */
-    UTIL_SEQ_ClrEvt ((1u << CFG_PKA_MUTEX));
-
-    /* Wait for flag to be raised */
-    UTIL_SEQ_WaitEvt ((1u << CFG_PKA_MUTEX));
-  }
-
-  /* Increment mutex */
-  PkaMut++;
-
-  return error;
-}
-
-int PKACTRL_MutexRelease(void)
-{
-  int error = 0;
-
-  if (0u != PkaMut)
-  {
-    PkaMut = 0u;
-
-    /* Set the flag up */
-    UTIL_SEQ_SetEvt ((1u << CFG_PKA_MUTEX));
-  }
-
-  return error;
-}
-
-int PKACTRL_TakeSemEndOfOperation(void)
-{
-  int error = 0;
-
-  /* Check if semaphore is available */
-  if (0u != EndOfProcSem)
-  {
-#if (CFG_LPM_LEVEL != 0)
-  /* Avoid going in low power during computation */
-  UTIL_LPM_SetMaxMode(1U << CFG_LPM_PKA_OVR_IT, UTIL_LPM_SLEEP_MODE);
-#endif /* (CFG_LPM_LEVEL != 0) */
-
-    /* Clear flag */
-    UTIL_SEQ_ClrEvt ((1u << CFG_PKA_END_OF_PROCESS));
-
-    /* Wait for flag to be raised */
-    UTIL_SEQ_WaitEvt ((1u << CFG_PKA_END_OF_PROCESS));
-  }
-
-  /* Increment semaphore */
-  EndOfProcSem++;
-
-  return error;
-}
-
-int PKACTRL_ReleaseSemEndOfOperation(void)
-{
-  int error = 0;
-
-  if (0u != EndOfProcSem)
-  {
-    EndOfProcSem = 0u;
-
-    /* Set the flag up */
-    UTIL_SEQ_SetEvt ((1u << CFG_PKA_END_OF_PROCESS));
-
-#if (CFG_LPM_LEVEL != 0)
-  /* Restore low power */
-  UTIL_LPM_SetMaxMode(1U << CFG_LPM_PKA_OVR_IT, UTIL_LPM_MAX_MODE);
-#endif /* (CFG_LPM_LEVEL != 0) */
-  }
-
-  return error;
-}
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */
 

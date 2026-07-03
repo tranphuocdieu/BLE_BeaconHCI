@@ -21,16 +21,18 @@ set(MX_Include_Dirs
     ${CMAKE_CURRENT_SOURCE_DIR}/../../System/Config/Debug_GPIO
     ${CMAKE_CURRENT_SOURCE_DIR}/../../STM32_WPAN/App
     ${CMAKE_CURRENT_SOURCE_DIR}/../../STM32_WPAN/Target
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Drivers/STM32WBAxx_HAL_Driver/Inc
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Utilities/trace/adv_trace
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Projects/Common/WPAN/Interfaces
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Projects/Common/WPAN/Modules
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Projects/Common/WPAN/Modules/BasicAES
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../Projects/Common/WPAN/Modules/Log
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Projects/Common/WPAN/Modules/MemoryManager
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Projects/Common/WPAN/Modules/RTDebug
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Projects/Common/WPAN/Modules/SerialCmdInterpreter
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../Projects/Common/WPAN/Modules/Log
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Utilities/misc
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Utilities/sequencer
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Utilities/tim_serv
@@ -96,6 +98,7 @@ set(STM32_Drivers_Src
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cryp_ex.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_icache.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_gpio.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_lptim.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_ramcfg.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rng.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rng_ex.c
@@ -128,12 +131,12 @@ set(STM32_WPAN_Src
 )
 set(Common_Src
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Projects/Common/WPAN/Startup/stm32wbaxx_ResetHandler_GCC.s
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../Projects/Common/WPAN/Modules/Log/log_module.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Projects/Common/WPAN/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Projects/Common/WPAN/Modules/RTDebug/RTDebug.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Projects/Common/WPAN/Modules/RTDebug/RTDebug_dtb.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Projects/Common/WPAN/Modules/MemoryManager/advanced_memory_manager.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Projects/Common/WPAN/Modules/MemoryManager/stm32_mm.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../Projects/Common/WPAN/Modules/Log/log_module.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Projects/Common/WPAN/Modules/BasicAES/baes_cmac.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Projects/Common/WPAN/Modules/BasicAES/baes_ccm.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Projects/Common/WPAN/Modules/BasicAES/baes_ecb.c
@@ -143,6 +146,7 @@ set(Common_Src
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Projects/Common/WPAN/Modules/scm.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Projects/Common/WPAN/Modules/stm_list.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Projects/Common/WPAN/Modules/stm_queue.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../Projects/Common/WPAN/Modules/wpan_utils.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Projects/Common/WPAN/Interfaces/adv_trace_usart_if.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Projects/Common/WPAN/Interfaces/hw_aes.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Projects/Common/WPAN/Interfaces/hw_otp.c
@@ -157,9 +161,11 @@ set(MX_LINK_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Middlewares/ST/STM32_WPAN/ble/stack/lib
 )
 # Project static libraries
-set(MX_LINK_LIBS  
-	:WBA6_LinkLayer_BLE_Full_lib.a 
+set(MX_LINK_LIBS 
+ "-Wl,--start-group" 
+	:LinkLayer_BLE_Full_V3_0.a 
 	:stm32wba_ble_stack_llo.a
+ "-Wl,--end-group"
     STM32_Drivers
     ${TOOLCHAIN_LINK_LIBRARIES}
     Utilities	STM32_WPAN	Common	

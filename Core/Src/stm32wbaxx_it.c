@@ -66,6 +66,7 @@ extern void (*low_isr_callback)(void);
 
 /* External variables --------------------------------------------------------*/
 extern volatile uint8_t radio_sw_low_isr_is_running_high_prio;
+extern LPTIM_HandleTypeDef hlptim1;
 extern RTC_HandleTypeDef hrtc;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
@@ -158,7 +159,7 @@ void UsageFault_Handler(void)
 }
 
 /**
-  * @brief This function handles System service call via SWI instruction.
+  * @brief This function handles System service call via SVC instruction.
   */
 void SVC_Handler(void)
 {
@@ -302,6 +303,20 @@ void USART1_IRQHandler(void)
   /* USER CODE BEGIN USART1_IRQn 1 */
 
   /* USER CODE END USART1_IRQn 1 */
+}
+
+/**
+  * @brief This function handles LPTIM1 global interrupt.
+  */
+void LPTIM1_IRQHandler(void)
+{
+  /* USER CODE BEGIN LPTIM1_IRQn 0 */
+
+  /* USER CODE END LPTIM1_IRQn 0 */
+  HAL_LPTIM_IRQHandler(&hlptim1);
+  /* USER CODE BEGIN LPTIM1_IRQn 1 */
+
+  /* USER CODE END LPTIM1_IRQn 1 */
 }
 
 /**

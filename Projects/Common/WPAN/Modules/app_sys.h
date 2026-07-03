@@ -1,4 +1,3 @@
-/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file    app_sys.h
@@ -7,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2022-2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -16,11 +15,15 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
+
 #ifndef APP_SYS_H
 #define APP_SYS_H
 
-#include <stdint.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "common_wpan_conf.h"
 
 /* Exported constants --------------------------------------------------------*/
 
@@ -29,18 +32,24 @@
  * This macro is the sum of the durations of standby exit and Link Layer
  * deep sleep mode exit.
  */
+#if !defined(CFG_LPM_STDBY_WAKEUP_TIME)
+#define RADIO_DEEPSLEEP_WAKEUP_TIME_US (1500U)
+#else
 #define RADIO_DEEPSLEEP_WAKEUP_TIME_US (CFG_LPM_STDBY_WAKEUP_TIME)
+#endif
 
-/* USER CODE BEGIN EC */
-
-/* USER CODE END EC */
+/* Legacy APIs backward compatibility */
+#define APP_SYS_BLE_EnterDeepSleep      APP_SYS_EnterDeepSleep
+#define APP_SYS_LPM_EnterLowPowerMode   APP_SYS_EnterDeepSleep
 
 /* Exported functions prototypes ---------------------------------------------*/
-
-void APP_SYS_BLE_EnterDeepSleep(void);
+#if (CFG_LPM_LEVEL != 0)  
+void APP_SYS_EnterDeepSleep(void);
 void APP_SYS_SetWakeupOffset(uint32_t wakeup_offset_us);
-/* USER CODE BEGIN EFP */
+#endif /* (CFG_LPM_LEVEL != 0) */
 
-/* USER CODE END EFP */
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* APP_SYS_H */

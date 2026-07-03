@@ -37,6 +37,12 @@ add_executable(${CMAKE_PROJECT_NAME})
 # Add STM32CubeMX generated sources
 add_subdirectory(cmake/stm32cubemx)
 
+# Import BT Driver Library (already built)
+add_library(btstack_lib STATIC IMPORTED)
+set_target_properties(btstack_lib PROPERTIES
+    IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/hh_stm32_mercury/build/release/bluekitchen_lib.a"
+)
+
 # Link directories setup
 target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined library search paths
@@ -45,11 +51,15 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
+    "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/hh_stm32_mercury/hal/btstack_hal.c"
+    "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/hh_stm32_mercury/hal/btstack_systemapi.c"
+    "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/hh_stm32_mercury/hal/hal_time_ms.c"
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
+    "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/hh_stm32_mercury/api/"
 )
 
 # Add project symbols (macros)
@@ -63,6 +73,7 @@ list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES ob)
 # Add linked libraries
 target_link_libraries(${CMAKE_PROJECT_NAME}
     stm32cubemx
+    btstack_lib
 
     # Add user defined libraries
 )
