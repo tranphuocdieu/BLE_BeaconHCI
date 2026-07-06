@@ -68,10 +68,10 @@ set(MX_Application_Src
     ${CMAKE_CURRENT_SOURCE_DIR}/../../STM32_WPAN/Target/linklayer_plat.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../STM32_WPAN/Target/ll_sys_if.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../STM32_WPAN/Target/host_stack_if.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../../STM32_WPAN/App/eddystone_tlm_service.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../../STM32_WPAN/App/eddystone_uid_service.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../../STM32_WPAN/App/eddystone_url_service.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../../STM32_WPAN/App/ibeacon_service.c
+    # ${CMAKE_CURRENT_SOURCE_DIR}/../../../STM32_WPAN/App/eddystone_tlm_service.c
+    # ${CMAKE_CURRENT_SOURCE_DIR}/../../../STM32_WPAN/App/eddystone_uid_service.c
+    # ${CMAKE_CURRENT_SOURCE_DIR}/../../../STM32_WPAN/App/eddystone_url_service.c
+    # ${CMAKE_CURRENT_SOURCE_DIR}/../../../STM32_WPAN/App/ibeacon_service.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../startup_stm32wba65xx.s
 )
 
@@ -168,7 +168,10 @@ set(MX_LINK_LIBS
  "-Wl,--end-group"
     STM32_Drivers
     ${TOOLCHAIN_LINK_LIBRARIES}
-    Utilities	STM32_WPAN	Common	
+    Utilities
+	STM32_WPAN
+	Common
+	
 )
 # Interface library for includes and symbols
 add_library(stm32cubemx INTERFACE)
