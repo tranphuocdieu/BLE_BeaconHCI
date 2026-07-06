@@ -2807,23 +2807,14 @@ __weak void HAL_LPTIM_CompareMatchCallback(LPTIM_HandleTypeDef *hlptim)
   * @param  hlptim LPTIM handle
   * @retval None
   */
-volatile uint64_t g_system_tick = 0;
 __weak void HAL_LPTIM_AutoReloadMatchCallback(LPTIM_HandleTypeDef *hlptim)
 {
   /* Prevent unused argument(s) compilation warning */
   UNUSED(hlptim);
-  if (hlptim->Instance == LPTIM1)
-  {
-    g_system_tick++;
-  }
+
   /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_LPTIM_AutoReloadMatchCallback could be implemented in the user file
    */
-}
-
-uint32_t SYS_GetCurrentTimeMs(void)
-{
-    return g_system_tick;
 }
 
 /**

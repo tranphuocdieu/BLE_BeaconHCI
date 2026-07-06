@@ -964,7 +964,6 @@ void HAL_LPTIM_IRQHandler(LPTIM_HandleTypeDef *hlptim);
 /* CallBack functions  ********************************************************/
 void HAL_LPTIM_CompareMatchCallback(LPTIM_HandleTypeDef *hlptim);
 void HAL_LPTIM_AutoReloadMatchCallback(LPTIM_HandleTypeDef *hlptim);
-uint32_t SYS_GetCurrentTimeMs(void);
 void HAL_LPTIM_TriggerCallback(LPTIM_HandleTypeDef *hlptim);
 void HAL_LPTIM_CompareWriteCallback(LPTIM_HandleTypeDef *hlptim);
 void HAL_LPTIM_AutoReloadWriteCallback(LPTIM_HandleTypeDef *hlptim);
