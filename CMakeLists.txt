@@ -40,7 +40,7 @@ add_subdirectory(cmake/stm32cubemx)
 # Import BT Driver Library (already built)
 add_library(btstack_lib STATIC IMPORTED)
 set_target_properties(btstack_lib PROPERTIES
-    IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/hh_stm32_mercury/build/release/bluekitchen_lib.a"
+    IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/bs_gcc_stm32_mercury/build/debug/btmercury.a"
 )
 
 # Link directories setup
@@ -51,15 +51,18 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
-    "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/hh_stm32_mercury/hal/btstack_hal.c"
-    "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/hh_stm32_mercury/hal/btstack_systemapi.c"
-    "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/hh_stm32_mercury/hal/hal_time_ms.c"
+    "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/bs_gcc_stm32_mercury/hal/btstack_hal.c"
+    "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/bs_gcc_stm32_mercury/hal/btstack_systemapi.c"
+    "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/bs_gcc_stm32_mercury/hal/hal_time_ms.c"
+    "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/bs_gcc_stm32_mercury/ame/imageexternalflash_c_api.cpp"
+    # "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/bs_gcc_stm32_mercury/ame/radioutils.c"
+    "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/bs_gcc_stm32_mercury/ame/bt_firmware_embedded_CY20706A2_MERCURY.c"
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
-    "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/hh_stm32_mercury/api/"
+    "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/bs_gcc_stm32_mercury/api/"
 )
 
 # Add project symbols (macros)

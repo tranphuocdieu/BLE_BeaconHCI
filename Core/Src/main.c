@@ -18,7 +18,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
+#include "btstack_interface.h"
+#include "btstack_hal.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -118,7 +119,7 @@ int main(void)
 
   /* Init code for STM32_WPAN */
   MX_APPE_Init(NULL);
-
+  SS_Init(NULL);
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)

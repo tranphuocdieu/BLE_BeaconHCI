@@ -1,4 +1,4 @@
-#include "tick.h"
+#include "app_tick.h"
 #include "main.h"
 
 static volatile uint32_t s_tick;

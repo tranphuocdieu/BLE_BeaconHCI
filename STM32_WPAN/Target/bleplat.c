@@ -25,7 +25,7 @@
 #include "blestack.h"
 #include "host_stack_if.h"
 
-#include "ble_wrap.c"
+// #include "ble_wrap.c"
 
 /*****************************************************************************/
 
