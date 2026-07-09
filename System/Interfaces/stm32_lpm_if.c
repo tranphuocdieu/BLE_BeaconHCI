@@ -643,7 +643,7 @@ OPTIMIZED static void PWR_ExitOffMode( void )
 
       /* Put back user sysTick clock source settings */
       /* Select SysTick source clock */
-      HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_LSE);
+      HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK_DIV8);
 
       /* Initialize SysTick */
       HAL_StatusTypeDef hal_status;

@@ -63,7 +63,7 @@ void MX_StandbyExit_PeripheralInit(void)
   if(LPM_is_wakeup_time_profiling_done() != 0)
   {
     /* Select SysTick source clock */
-    HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_LSE);
+    HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK_DIV8);
 
     /* Initialize HAL Tick */
     if (HAL_InitTick(TICK_INT_PRIORITY) != HAL_OK)
@@ -74,7 +74,7 @@ void MX_StandbyExit_PeripheralInit(void)
 #endif /* CFG_LPM_STANDBY_SUPPORTED */
 #else
   /* Select SysTick source clock */
-  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_LSE);
+  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK_DIV8);
 
   /* Initialize SysTick */
   if (HAL_InitTick(TICK_INT_PRIORITY) != HAL_OK)
