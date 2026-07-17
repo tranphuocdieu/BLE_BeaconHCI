@@ -37,13 +37,9 @@
 #include "stm_list.h"
 #include "advanced_memory_manager.h"
 #include "blestack.h"
-#include "simple_nvm_arbiter.h"
-#include "lhci.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "lhci.h"
 #include "os_wrapper.h"
-#include "stm32wbaxx_nucleo.h"
 #include "stm32_lpm.h"
 #include "stm32_lpm_if.h"
 
@@ -83,12 +79,7 @@ typedef struct
 
 /* Private defines -----------------------------------------------------------*/
 /* GATT buffer size (in bytes)*/
-#define BLE_GATT_BUF_SIZE \
-          BLE_TOTAL_BUFFER_SIZE_GATT(CFG_BLE_NUM_GATT_ATTRIBUTES, \
-                                     CFG_BLE_NUM_GATT_SERVICES, \
-                                     CFG_BLE_ATT_VALUE_ARRAY_SIZE)
 
-#define BLE_HOST_EVENT_BUF_SIZE   CFG_BLE_HOST_EVENT_BUF_SIZE
 
 #define MBLOCK_COUNT              (BLE_MBLOCKS_CALC(PREP_WRITE_LIST_SIZE, \
                                                     CFG_BLE_ATT_MTU_MAX, \
@@ -99,7 +90,6 @@ typedef struct
         (BLE_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, MBLOCK_COUNT, (CFG_BLE_EATT_BEARER_PER_LINK * CFG_BLE_NUM_LINK)))
 
 /* 2 words are reserved for SNVMA management */
-#define BLE_HOST_NVM_SIZE_U64          ((SNVMA_NVM_ID_1_BUFFER_1_SIZE / sizeof(uint64_t) ) - 2)
 
 #define BLE_DEFAULT_PIN            (111111) /* Default PIN code for pairing */
 
@@ -139,11 +129,7 @@ static BleStack_init_t pInitParams;
 
 /* Host stack buffers */
 PLACE_IN_SECTION("TAG_HostStack") static uint32_t host_buffer[DIVC(BLE_DYN_ALLOC_SIZE, 4)];
-PLACE_IN_SECTION("TAG_HostStack") static uint32_t gatt_buffer[DIVC(BLE_GATT_BUF_SIZE, 4)];
-PLACE_IN_SECTION("TAG_HostStack") static uint16_t host_event_buffer[DIVC(BLE_HOST_EVENT_BUF_SIZE, 2)];
-PLACE_IN_SECTION("TAG_HostStack") static uint64_t host_nvm_buffer[BLE_HOST_NVM_SIZE_U64];
 PLACE_IN_SECTION("TAG_HostStack") static uint8_t long_write_buffer[CFG_BLE_LONG_WRITE_DATA_BUF_SIZE];
-PLACE_IN_SECTION("TAG_HostStack") static uint8_t extra_data_buffer[CFG_BLE_EXTRA_DATA_BUF_SIZE];
 
 /* USER CODE BEGIN PV */
 #if (CFG_LPM_LEVEL != 0)
@@ -161,7 +147,6 @@ static LowPowerModeStatus_t LowPowerModeStatus;
 /* Private function prototypes -----------------------------------------------*/
 static uint8_t HOST_BLE_Init(void);
 static void TM_Init(void);
-static void TM_SysLocalCmd(uint8_t *data);
 static void TM_TxToHost(void);
 static void TM_EventNotify(void);
 static void TM_UART_TxComplete(uint8_t *buffer);
@@ -175,9 +160,6 @@ static uint8_t* HCI_GetFreeTxBuffer(uint8_t hci_event_type);
 static uint8_t* HCI_GetDataReceived(void);
 static uint8_t* HCI_GetFreeRxBuffer(void);
 /* USER CODE BEGIN PFP */
-#if (CFG_LPM_LEVEL != 0)
-static void TM_SetLowPowerMode( LowPowerModeStatus_t low_power_mode_status );
-#endif /* (CFG_LPM_LEVEL != 0) */
 
 /* USER CODE END PFP */
 
@@ -205,24 +187,10 @@ void APP_BLE_Init(void)
   UTIL_SEQ_RegTask(1U << CFG_TASK_BLE_HOST, UTIL_SEQ_RFU, BleStack_Process_BG);
 
   /* Initialise NVM RAM buffer, invalidate it's content before restoration */
-  host_nvm_buffer[0] = 0;
-
-  /* Register A NVM buffer for BLE Host stack */
-  uint8_t status = SNVMA_Register(APP_BLE_Host_SNVMA_BufferId_1_1,
-                  (uint32_t *)host_nvm_buffer,
-                  (BLE_HOST_NVM_SIZE_U64 * sizeof(uint64_t)) / sizeof(uint32_t) );
-  if (status != SNVMA_ERROR_OK)
-  {
-    LOG_ERROR_APP( "SNVMA registration for BLE Host stack failed with status: %d", status);
-    Error_Handler();
-  }
 
   /* USER CODE BEGIN APP_BLE_Init_Buffers */
 
   /* USER CODE END APP_BLE_Init_Buffers */
-
-  /* Realize a restore */
-  SNVMA_Restore(APP_BLE_Host_SNVMA_BufferId_1_1);
 
   /* Initialize BLE related modules */
   BAES_Reset( );
@@ -264,29 +232,6 @@ static uint8_t HOST_BLE_Init(void)
 {
   tBleStatus return_status;
 
-  pInitParams.numAttrRecord           = CFG_BLE_NUM_GATT_ATTRIBUTES;
-  pInitParams.numAttrServ             = CFG_BLE_NUM_GATT_SERVICES;
-  pInitParams.attrValueArrSize        = CFG_BLE_ATT_VALUE_ARRAY_SIZE;
-  pInitParams.prWriteListSize         = CFG_BLE_ATTR_PREPARE_WRITE_VALUE_SIZE;
-  pInitParams.attMtu                  = CFG_BLE_ATT_MTU_MAX;
-  pInitParams.max_coc_nbr             = CFG_BLE_COC_NBR_MAX;
-  pInitParams.max_coc_mps             = CFG_BLE_COC_MPS_MAX;
-  pInitParams.max_coc_initiator_nbr   = CFG_BLE_COC_INITIATOR_NBR_MAX;
-  pInitParams.max_add_eatt_bearers    = CFG_BLE_EATT_BEARER_PER_LINK * CFG_BLE_NUM_LINK;
-  pInitParams.numOfLinks              = CFG_BLE_NUM_LINK;
-  pInitParams.mblockCount             = CFG_BLE_MBLOCK_COUNT;
-  pInitParams.bleStartRamAddress      = (uint8_t*)host_buffer;
-  pInitParams.total_buffer_size       = BLE_DYN_ALLOC_SIZE;
-  pInitParams.bleStartRamAddress_GATT = (uint8_t*)gatt_buffer;
-  pInitParams.total_buffer_size_GATT  = BLE_GATT_BUF_SIZE;
-  pInitParams.extra_data_buffer_size  = CFG_BLE_EXTRA_DATA_BUF_SIZE;
-  pInitParams.extra_data_buffer       = (uint8_t*)extra_data_buffer;
-  pInitParams.gatt_long_write_buffer  = (uint8_t*)long_write_buffer;
-  pInitParams.host_event_fifo_buffer  = host_event_buffer;
-  pInitParams.host_event_fifo_buffer_size = DIVC(BLE_HOST_EVENT_BUF_SIZE, 2);
-  pInitParams.nvm_cache_buffer        = host_nvm_buffer;
-  pInitParams.nvm_cache_max_size      = BLE_HOST_NVM_SIZE_U64;
-  pInitParams.nvm_cache_size          = BLE_HOST_NVM_SIZE_U64 - 1;
   pInitParams.options                 = CFG_BLE_OPTIONS;
   pInitParams.debug                   = 0U;
 /* USER CODE BEGIN HOST_BLE_Init_Params */
@@ -328,10 +273,7 @@ static void TM_Init(void)
   BLEUART_Read(&huart1, HCI_GetFreeRxBuffer(), 1 /*IDENTIFIER_OFFSET*/);
 
   /* USER CODE BEGIN TM_Init */
-#if (CFG_LPM_LEVEL != 0)
-  UTIL_LPM_SetMaxMode(1U << CFG_LPM_APP_BLE, UTIL_LPM_SLEEP_MODE);
-  LowPowerModeStatus = LOW_POWER_MODE_DISABLE;
-#endif /* (CFG_LPM_LEVEL != 0) */
+
   /* USER CODE END TM_Init */
 
   os_enable_isr();
@@ -339,42 +281,6 @@ static void TM_Init(void)
   UTIL_SEQ_RegTask(1U << CFG_TASK_TX_TO_HOST_ID, UTIL_SEQ_RFU, TM_TxToHost);
   UTIL_SEQ_RegTask(1U << CFG_TASK_NOTIFY_EVENT_ID, UTIL_SEQ_RFU, TM_EventNotify);
 
-}
-
-/**
-  * @brief Process local system commands
-  * @param data: pointer to the system command packet data
-  * @retval None
-  */
-static void TM_SysLocalCmd (uint8_t *data)
-{
-  uint16_t lcmd_opcode =(uint16_t)(data[1] | (data[2]<<8));
-
-  switch(lcmd_opcode)
-  {
-    case LHCI_OPCODE_C1_WRITE_REG:
-      LHCI_C1_Write_Register((BleCmdSerial_t*)data);
-      break;
-
-    case LHCI_OPCODE_C1_READ_REG:
-      LHCI_C1_Read_Register((BleCmdSerial_t*)data);
-      break;
-
-    case LHCI_OPCODE_C1_DEVICE_INF:
-      LHCI_C1_Read_Device_Information((BleCmdSerial_t*)data);
-      break;
-    default:
-      ((TL_CcEvt_t*)(((BleEvtSerial_t*)data)->evt.payload))->cmdcode = lcmd_opcode;
-      ((TL_CcEvt_t*)(((BleEvtSerial_t*)data)->evt.payload))->payload[0] = 0x01;
-      ((TL_CcEvt_t*)(((BleEvtSerial_t*)data)->evt.payload))->numcmd = 1;
-      ((BleEvtSerial_t*)data)->type = TL_LOCRSP_PKT_TYPE;
-      ((BleEvtSerial_t*)data)->evt.evtcode = HCI_COMMAND_COMPLETE_EVT_CODE;
-      ((BleEvtSerial_t*)data)->evt.plen = TL_EVT_CS_PAYLOAD_SIZE;
-
-      break;
-  }
-
-  return;
 }
 
 /**
@@ -394,11 +300,6 @@ static void TM_TxToHost(void)
     if ( pData != NULL )
     {
       packet_type = *pData;
-
-      if( packet_type == TL_LOCCMD_PKT_TYPE )
-      {
-        TM_SysLocalCmd(pData);
-      }
 
       BleStack_Request(pData);
       BleStackCB_Process();
@@ -695,49 +596,7 @@ static uint8_t* HCI_GetDataReceived(void)
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTION */
-#if (CFG_LPM_LEVEL != 0)
-static void TM_SetLowPowerMode( LowPowerModeStatus_t low_power_mode_status )
-{
-  if(LowPowerModeStatus == LOW_POWER_MODE_DISABLE)
-  {
-    #if (CFG_LED_SUPPORTED == 1)
-    BSP_LED_Off(LED_GREEN);
-    #endif
-    UTIL_LPM_SetMaxMode(1U << CFG_LPM_APP_BLE, UTIL_LPM_STOP1_MODE);
-    if(low_power_mode_status == LOW_POWER_MODE_STOP)
-    {
-      LowPowerModeStatus = LOW_POWER_MODE_STOP;
-    }
-    else
-    {
-      UTIL_LPM_SetMaxMode(1U << CFG_LPM_APP_BLE, UTIL_LPM_STANDBY_MODE);
-      LowPowerModeStatus = LOW_POWER_MODE_STDBY;
-    }
-  }
-  else if(LowPowerModeStatus == LOW_POWER_MODE_STOP)
-  {
-    if(low_power_mode_status == LOW_POWER_MODE_STOP)
-    {
-      #if (CFG_LED_SUPPORTED == 1)
-      BSP_LED_On(LED_GREEN);
-      #endif
-      LowPowerModeStatus = LOW_POWER_MODE_DISABLE;
-      UTIL_LPM_SetMaxMode(1U << CFG_LPM_APP_BLE, UTIL_LPM_SLEEP_MODE);
-    }
-    else
-    {
-      LowPowerModeStatus = LOW_POWER_MODE_STDBY;
-      UTIL_LPM_SetMaxMode(1U << CFG_LPM_APP_BLE, UTIL_LPM_STANDBY_MODE);
-    }
-  }
-  else /* LOW_POWER_MODE_STDBY */
-  {
-    /* cannot exit from standby in current implementation */
-    /* missing wakeup pin */
-  }
-  return;
-}
-#endif /* (CFG_LPM_LEVEL != 0) */
+
 /* USER CODE END FD_LOCAL_FUNCTION */
 
 /*************************************************************
@@ -816,22 +675,5 @@ tBleStatus BLECB_Indication( const uint8_t* data,
 }
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */
-
-#if (CFG_BUTTON_SUPPORTED == 1)
-void APPE_Button1Action(void)
-{
-#if (CFG_LPM_LEVEL != 0)
-  /* Enter/Exit Stop Mode */
-  TM_SetLowPowerMode(LOW_POWER_MODE_STOP);
-#endif /* (CFG_LPM_LEVEL != 0) */
-}
-void APPE_Button2Action(void)
-{
-#if (CFG_LPM_LEVEL != 0)
-  /* Enter Standby Mode, exit must be performed by reset */
-  TM_SetLowPowerMode(LOW_POWER_MODE_STDBY);
-#endif /* (CFG_LPM_LEVEL != 0) */
-}
-#endif
 
 /* USER CODE END FD_WRAP_FUNCTIONS */

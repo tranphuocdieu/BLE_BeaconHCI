@@ -119,7 +119,8 @@ int main(void)
 
   /* Init code for STM32_WPAN */
   MX_APPE_Init(NULL);
-  SS_Init(NULL);
+  SS_RadioDetect(BT_POWER_UP);
+  // SS_Init(NULL);
   // HAL_LPTIM_Counter_Start(&hlptim1);
   HAL_LPTIM_Counter_Start_IT(&hlptim1);
   /* Infinite loop */
