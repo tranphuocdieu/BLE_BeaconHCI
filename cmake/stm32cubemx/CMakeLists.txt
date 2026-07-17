@@ -69,6 +69,7 @@ set(MX_Application_Src
     ${CMAKE_CURRENT_SOURCE_DIR}/../../STM32_WPAN/Target/linklayer_plat.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../STM32_WPAN/Target/ll_sys_if.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../STM32_WPAN/Target/host_stack_if.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../STM32_WPAN/App/app_ble.c
     # ${CMAKE_CURRENT_SOURCE_DIR}/../../../STM32_WPAN/App/eddystone_tlm_service.c
     # ${CMAKE_CURRENT_SOURCE_DIR}/../../../STM32_WPAN/App/eddystone_uid_service.c
     # ${CMAKE_CURRENT_SOURCE_DIR}/../../../STM32_WPAN/App/eddystone_url_service.c

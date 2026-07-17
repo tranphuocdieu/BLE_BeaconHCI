@@ -27,6 +27,9 @@
 #include "ll_sys_if.h"
 #include "stm32_rtos.h"
 #include "utilities_common.h"
+#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
+#include "temp_measurement.h"
+#endif /* (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1) */
 #if (CFG_LPM_STANDBY_SUPPORTED == 0)
 extern void profile_reset(void);
 #endif
@@ -64,6 +67,9 @@ extern void profile_reset(void);
 /* USER CODE END GV */
 
 /* Private functions prototypes-----------------------------------------------*/
+#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
+static void ll_sys_bg_temperature_measurement_init(void);
+#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 static void ll_sys_sleep_clock_source_selection(void);
 static uint8_t ll_sys_BLE_sleep_clock_accuracy_selection(void);
 void ll_sys_reset(void);
@@ -134,6 +140,14 @@ void ll_sys_config_params(void)
 
 /* USER CODE END ll_sys_config_params_1 */
 
+#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
+  /* Initialize link layer temperature measurement background task */
+  ll_sys_bg_temperature_measurement_init();
+
+  /* Link layer IP uses temperature based calibration instead of periodic one */
+  ll_intf_cmn_set_temperature_sensor_state();
+#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
+
   /* Link Layer power table */
   ll_intf_cmn_select_tx_power_table(CFG_RF_TX_POWER_TABLE_ID);
 
@@ -141,6 +155,41 @@ void ll_sys_config_params(void)
 
 /* USER CODE END ll_sys_config_params_2 */
 }
+
+#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
+
+/**
+  * @brief  Link Layer temperature request background process initialization
+  * @param  None
+  * @retval None
+  */
+void ll_sys_bg_temperature_measurement_init(void)
+{
+  /* Register Temperature Measurement task */
+  UTIL_SEQ_RegTask(1U << CFG_TASK_TEMP_MEAS, UTIL_SEQ_RFU, TEMPMEAS_RequestTemperatureMeasurement);
+}
+
+/**
+  * @brief  Request backroud task processing for temperature measurement
+  * @param  None
+  * @retval None
+  */
+void ll_sys_bg_temperature_measurement(void)
+{
+  static uint8_t initial_temperature_acquisition = 0;
+
+  if(initial_temperature_acquisition == 0)
+  {
+    TEMPMEAS_RequestTemperatureMeasurement();
+    initial_temperature_acquisition = 1;
+  }
+  else
+  {
+    UTIL_SEQ_SetTask(1U << CFG_TASK_TEMP_MEAS, CFG_SEQ_PRIO_0);
+  }
+}
+
+#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 
 uint8_t ll_sys_BLE_sleep_clock_accuracy_selection(void)
 {

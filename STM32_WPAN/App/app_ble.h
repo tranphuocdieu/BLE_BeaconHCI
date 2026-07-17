@@ -1,13 +1,13 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    ll_sys_if.h
+  * @file    app_ble.h
   * @author  MCD Application Team
-  * @brief   Header file for initiating system
+  * @brief   Header for ble application
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -19,36 +19,79 @@
 /* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef LL_SYS_IF_H
-#define LL_SYS_IF_H
+#ifndef APP_BLE_H
+#define APP_BLE_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "stdint.h"
 
 /* Private includes ----------------------------------------------------------*/
+#include "ble_types.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
+
+/**
+  * HCI Event Packet Types
+  */
+
+typedef __PACKED_STRUCT
+{
+  uint8_t   evtcode;
+  uint8_t   plen;
+  uint8_t   payload[1];
+} BleEvt_t;
+
+typedef __PACKED_STRUCT
+{
+  uint8_t   type;
+  BleEvt_t  evt;
+} BleEvtSerial_t;
+
+/**
+  * Event type
+  */
+
+/**
+  * This the payload of TL_Evt_t for a command complete event
+  */
+typedef __PACKED_STRUCT
+{
+  uint8_t   numcmd;
+  uint16_t  cmdcode;
+  uint8_t   payload[1];
+} TL_CcEvt_t;
+
+/**
+  * LHCI Command Types
+  */
+
+typedef __PACKED_STRUCT
+{
+  uint16_t   cmdcode;
+  uint8_t   plen;
+  uint8_t   payload[255];
+} BleCmd_t;
+
+typedef __PACKED_STRUCT
+{
+  uint8_t   type;
+  BleCmd_t  cmd;
+} BleCmdSerial_t;
+
 /* USER CODE BEGIN ET */
 
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
-#define DRIFT_TIME_DEFAULT                      (14)
-#define DRIFT_TIME_EXTRA_LSI2                   (9)
-#define DRIFT_TIME_EXTRA_GCC_DEBUG              (6)
-
-#define EXEC_TIME_DEFAULT                       (28)
-#define EXEC_TIME_EXTRA_LSI2                    (3)
-#define EXEC_TIME_EXTRA_GCC_DEBUG               (4)
-
-#define SCHDL_TIME_DEFAULT                      (20)
+#define TL_LOCCMD_PKT_TYPE             ( 0x20 )
+#define TL_LOCRSP_PKT_TYPE             ( 0x21 )
+#define TL_EVT_CS_PAYLOAD_SIZE         ( 4 )
 /* USER CODE BEGIN EC */
 
 /* USER CODE END EC */
@@ -64,19 +107,8 @@ extern "C" {
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
-#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
-void ll_sys_bg_temperature_measurement(void);
-#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
-/**
- * @brief Apply CTE settings
- * @param  None
- * @retval None
- */
-void ll_sys_apply_cte_settings(void);
-#if (CFG_LPM_STANDBY_SUPPORTED == 0)
-void ll_sys_get_ble_profile_statistics(uint32_t* exec_time, uint32_t* drift_time, uint32_t* average_drift_time, uint8_t reset);
-#endif
-
+void APP_BLE_Init(void);
+void BleStack_Process_BG(void);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */
@@ -85,4 +117,4 @@ void ll_sys_get_ble_profile_statistics(uint32_t* exec_time, uint32_t* drift_time
 }
 #endif
 
-#endif /*LL_SYS_IF_H */
+#endif /*APP_BLE_H */
