@@ -152,4 +152,14 @@ void BLEPLAT_TimerStop( uint16_t id )
 {
   BLE_TIMER_Stop( id );
 }
+
+/*****************************************************************************/
+
+void BLEPLATCB_TimerExpiry( uint16_t id )
+{
+  /* Timer expiry callback from BLE stack */
+  UNUSED(id);
+  return;
+}
+
 /*****************************************************************************/

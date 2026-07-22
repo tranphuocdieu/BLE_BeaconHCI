@@ -131,10 +131,10 @@ int main(void)
     /* USER CODE END WHILE */
     // MX_APPE_Process();
 
-    uint32_t current_time = SYS_GetCurrentTimeMs();
-    HAL_Delay(1000);
-    uint32_t new_time = SYS_GetCurrentTimeMs();
-    HAL_Delay(1000);
+    // uint32_t current_time = SYS_GetCurrentTimeMs();
+    // HAL_Delay(1000);
+    // uint32_t new_time = SYS_GetCurrentTimeMs();
+    // HAL_Delay(1000);
 
     /* USER CODE BEGIN 3 */
   }

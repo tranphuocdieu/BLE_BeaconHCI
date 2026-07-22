@@ -22,6 +22,7 @@
 #include "app_common.h"
 #include "log_module.h"
 #include "app_conf.h"
+#include "app_ble.h"
 #include "main.h"
 #include "app_entry.h"
 #include "stm32_rtos.h"
@@ -178,7 +179,7 @@ uint32_t MX_APPE_Init(void *p_param)
   APPE_RNG_Init();
 
   /* USER CODE BEGIN APPE_Init_1 */
-
+  APP_BLE_Init();
   /* USER CODE END APPE_Init_1 */
 
   /* USER CODE BEGIN APPE_Init_2 */

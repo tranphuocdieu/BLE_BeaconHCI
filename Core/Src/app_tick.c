@@ -40,10 +40,12 @@ uint64_t lptim_ticks(void)
     return ((uint64_t)high << 16) | low;
 }
 
+extern void SS_HAL_Timer_ISR( void );
 void HAL_LPTIM_AutoReloadMatchCallback(LPTIM_HandleTypeDef *hlptim)
 {
     if (hlptim->Instance == LPTIM1)
     {
+        SS_HAL_Timer_ISR();
         lptim_high++;
     }
 }
