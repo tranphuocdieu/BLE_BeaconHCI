@@ -18,10 +18,10 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "btstack_interface.h"
-#include "btstack_hal.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "btstack_interface.h"
+#include "btstack_hal.h"
 
 /* USER CODE END Includes */
 
@@ -119,22 +119,14 @@ int main(void)
 
   /* Init code for STM32_WPAN */
   MX_APPE_Init(NULL);
-  SS_RadioDetect(BT_POWER_UP);
-  // SS_Init(NULL);
-  // HAL_LPTIM_Counter_Start(&hlptim1);
-  HAL_LPTIM_Counter_Start_IT(&hlptim1);
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
 
     /* USER CODE END WHILE */
-    // MX_APPE_Process();
-
-    // uint32_t current_time = SYS_GetCurrentTimeMs();
-    // HAL_Delay(1000);
-    // uint32_t new_time = SYS_GetCurrentTimeMs();
-    // HAL_Delay(1000);
+    MX_APPE_Process();
 
     /* USER CODE BEGIN 3 */
   }

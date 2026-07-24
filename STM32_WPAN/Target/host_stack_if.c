@@ -22,13 +22,13 @@
 #include "host_stack_if.h"
 #include "app_conf.h"
 #include "ll_sys.h"
-#include "app_entry.h"
-#include "app_ble.h"
-#include "auto/ble_raw_api.h"
 #include "stm32_seq.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "app_entry.h"
+#include "app_ble.h"
+#include "auto/ble_raw_api.h"
 
 /* USER CODE END Includes */
 
@@ -70,11 +70,10 @@ void HostStack_Process(void)
 void BleStackCB_Process(void)
 {
   /* USER CODE BEGIN BleStackCB_Process 0 */
-
-  /* USER CODE END BleStackCB_Process 0 */
-
   /* BLE Host stack processing through background task */
   UTIL_SEQ_SetTask( 1U << CFG_TASK_BLE_HOST, CFG_SEQ_PRIO_0);
+
+  /* USER CODE END BleStackCB_Process 0 */
 
   /* USER CODE BEGIN BleStackCB_Process 1 */
 

@@ -22,7 +22,6 @@
 #include "app_common.h"
 #include "log_module.h"
 #include "app_conf.h"
-#include "app_ble.h"
 #include "main.h"
 #include "app_entry.h"
 #include "stm32_rtos.h"
@@ -46,6 +45,7 @@
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "app_ble.h"
 
 /* USER CODE END Includes */
 

@@ -32,7 +32,6 @@ extern "C" {
 #include "app_entry.h"
 #include "app_common.h"
 #include "app_debug.h"
-#include "app_tick.h"
 
 #include "stm32wbaxx_ll_icache.h"
 #include "stm32wbaxx_ll_pka.h"
@@ -50,6 +49,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "app_tick.h"
 
 /* USER CODE END Includes */
 

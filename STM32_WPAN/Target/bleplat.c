@@ -20,14 +20,12 @@
 
 #include "app_common.h"
 #include "bleplat.h"
-#include "app_ble.h"
 #include "baes.h"
 #include "pka_ctrl.h"
-#include "ble_timer.h"
 #include "blestack.h"
 #include "host_stack_if.h"
 
-// #include "ble_wrap.c"
+#include "ble_wrap.c"
 
 /*****************************************************************************/
 
@@ -136,30 +134,6 @@ void PKACTRL_CB_Complete( void )
   BLEPLATCB_PkaComplete( );
 
   BleStackCB_Process( );
-}
-
-/*****************************************************************************/
-
-uint8_t BLEPLAT_TimerStart( uint16_t id,
-                            uint32_t timeout )
-{
-  return BLE_TIMER_Start( id, timeout );
-}
-
-/*****************************************************************************/
-
-void BLEPLAT_TimerStop( uint16_t id )
-{
-  BLE_TIMER_Stop( id );
-}
-
-/*****************************************************************************/
-
-void BLEPLATCB_TimerExpiry( uint16_t id )
-{
-  /* Timer expiry callback from BLE stack */
-  UNUSED(id);
-  return;
 }
 
 /*****************************************************************************/
