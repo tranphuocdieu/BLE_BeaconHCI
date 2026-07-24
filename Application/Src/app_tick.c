@@ -1,9 +1,10 @@
-#include "app_tick.h"
 #include "main.h"
+#include "app_tick.h"
 
 extern LPTIM_HandleTypeDef hlptim1;
 volatile uint32_t lptim_high = 0;
-uint64_t lptim_ticks(void);
+
+static uint64_t lptim_ticks(void);
 
 uint32_t SYS_GetCurrentTimeUs(void)
 {
@@ -19,7 +20,7 @@ uint32_t SYS_GetCurrentTimeMs(void)
     return (uint32_t)((ticks * 1000ULL) / 32768ULL);
 }
 
-uint64_t lptim_ticks(void)
+static uint64_t lptim_ticks(void)
 {
     uint32_t high;
     uint16_t low;
@@ -40,12 +41,10 @@ uint64_t lptim_ticks(void)
     return ((uint64_t)high << 16) | low;
 }
 
-extern void SS_HAL_Timer_ISR( void );
 void HAL_LPTIM_AutoReloadMatchCallback(LPTIM_HandleTypeDef *hlptim)
 {
     if (hlptim->Instance == LPTIM1)
     {
-        SS_HAL_Timer_ISR();
         lptim_high++;
     }
 }

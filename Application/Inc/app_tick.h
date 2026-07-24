@@ -1,9 +1,9 @@
-#ifndef TICK_H
-#define TICK_H
+#ifndef __APP_TICK_H__
+#define __APP_TICK_H__
 
 #include <stdint.h>
 
 uint32_t SYS_GetCurrentTimeUs(void);
 uint32_t SYS_GetCurrentTimeMs(void);
 
-#endif
+#endif /* __APP_TICK_H__ */

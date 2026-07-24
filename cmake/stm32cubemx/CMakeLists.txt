@@ -15,7 +15,6 @@ set(MX_Defines_Syms
 set(MX_Include_Dirs
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Core/Inc
     ${CMAKE_CURRENT_SOURCE_DIR}/../../System/Interfaces
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../System/Modules
     ${CMAKE_CURRENT_SOURCE_DIR}/../../System/Config
     ${CMAKE_CURRENT_SOURCE_DIR}/../../System/Config/Log
     ${CMAKE_CURRENT_SOURCE_DIR}/../../System/Config/LowPower
@@ -50,32 +49,30 @@ set(MX_Include_Dirs
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Middlewares/ST/STM32_WPAN/ble/stack/include/auto
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Middlewares/ST/STM32_WPAN/ble/svc/Inc
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Drivers/CMSIS/Include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../Application/Inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../System/Modules
 )
 
 # STM32CubeMX generated application sources
 set(MX_Application_Src
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../STM32_WPAN/Target/bleplat.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../STM32_WPAN/Target/power_table.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../STM32_WPAN/Target/linklayer_plat.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../STM32_WPAN/Target/ll_sys_if.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../STM32_WPAN/Target/host_stack_if.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../System/Config/Debug_GPIO/app_debug.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../System/Config/LowPower/user_low_power_config.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../System/Config/LowPower/peripheral_init.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../System/Interfaces/stm32_lpm_if.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Core/Src/main.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Core/Src/app_entry.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../Core/Src/app_tick.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Core/Src/stm32wbaxx_it.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Core/Src/stm32wbaxx_hal_msp.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Core/Src/sysmem.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Core/Src/syscalls.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../STM32_WPAN/Target/bleplat.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../STM32_WPAN/Target/power_table.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../STM32_WPAN/Target/linklayer_plat.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../STM32_WPAN/Target/ll_sys_if.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../STM32_WPAN/Target/host_stack_if.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../Application/Src/app_tick.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../STM32_WPAN/App/app_ble.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../System/Modules/ble_timer.c
-    # ${CMAKE_CURRENT_SOURCE_DIR}/../../../STM32_WPAN/App/eddystone_tlm_service.c
-    # ${CMAKE_CURRENT_SOURCE_DIR}/../../../STM32_WPAN/App/eddystone_uid_service.c
-    # ${CMAKE_CURRENT_SOURCE_DIR}/../../../STM32_WPAN/App/eddystone_url_service.c
-    # ${CMAKE_CURRENT_SOURCE_DIR}/../../../STM32_WPAN/App/ibeacon_service.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../startup_stm32wba65xx.s
 )
 
@@ -172,10 +169,7 @@ set(MX_LINK_LIBS
  "-Wl,--end-group"
     STM32_Drivers
     ${TOOLCHAIN_LINK_LIBRARIES}
-    Utilities
-	STM32_WPAN
-	Common
-	
+    Utilities	STM32_WPAN	Common	
 )
 # Interface library for includes and symbols
 add_library(stm32cubemx INTERFACE)
