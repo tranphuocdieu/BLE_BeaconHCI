@@ -25,7 +25,7 @@
 #include "blestack.h"
 #include "host_stack_if.h"
 
-#include "ble_wrap.c"
+// #include "ble_wrap.c"
 
 /*****************************************************************************/
 
@@ -134,6 +134,15 @@ void PKACTRL_CB_Complete( void )
   BLEPLATCB_PkaComplete( );
 
   BleStackCB_Process( );
+}
+
+/*****************************************************************************/
+
+void BLEPLATCB_TimerExpiry( uint16_t id )
+{
+  /* Timer expiry callback from BLE stack */
+  UNUSED(id);
+  return;
 }
 
 /*****************************************************************************/

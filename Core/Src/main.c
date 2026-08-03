@@ -115,6 +115,7 @@ int main(void)
   MX_ICACHE_Init();
   MX_LPTIM1_Init();
   /* USER CODE BEGIN 2 */
+  HAL_LPTIM_Counter_Start_IT(&hlptim1);
 
   /* USER CODE END 2 */
 
@@ -123,11 +124,12 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  SS_RadioDetect(BT_POWER_UP);
   while (1)
   {
 
     /* USER CODE END WHILE */
-    MX_APPE_Process();
+    // MX_APPE_Process();
 
     /* USER CODE BEGIN 3 */
   }
