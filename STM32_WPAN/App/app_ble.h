@@ -31,7 +31,7 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 #include "ble_types.h"
 /* USER CODE BEGIN Includes */
-
+#include "stm_list.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -85,7 +85,15 @@ typedef __PACKED_STRUCT
 } BleCmdSerial_t;
 
 /* USER CODE BEGIN ET */
+#define HCI_PACKET_MAX_SIZE     315
+#define HCI_PACKET_NUM          16
+typedef struct
+{
+    tListNode node;
 
+    uint16_t  length;
+    uint8_t   buf[HCI_PACKET_MAX_SIZE];
+} HCI_Packet_t;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -110,7 +118,16 @@ typedef __PACKED_STRUCT
 void APP_BLE_Init(void);
 void BleStack_Process_BG(void);
 /* USER CODE BEGIN EFP */
-
+void HCI_PoolInit(void);
+HCI_Packet_t *HCI_AllocPacket(void);
+void HCI_FreePacket(HCI_Packet_t *packet);
+void HCI_QueueEvent(HCI_Packet_t *packet);
+HCI_Packet_t *HCI_GetEvent(void);
+uint16_t HCI_GetEventCount(void);
+uint16_t HCI_GetFreePacketCount(void);
+uint8_t *HCI_GetPacketData(HCI_Packet_t *packet);
+uint16_t HCI_GetPacketLength(HCI_Packet_t *packet);
+tBleStatus HCI_SendPacket(HCI_Packet_t *packet);
 /* USER CODE END EFP */
 
 #ifdef __cplusplus
