@@ -27,79 +27,24 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-
-/* Private includes ----------------------------------------------------------*/
-#include "ble_types.h"
 /* USER CODE BEGIN Includes */
-#include "stm_list.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 
-/**
-  * HCI Event Packet Types
-  */
-
-typedef __PACKED_STRUCT
-{
-  uint8_t   evtcode;
-  uint8_t   plen;
-  uint8_t   payload[1];
-} BleEvt_t;
-
-typedef __PACKED_STRUCT
-{
-  uint8_t   type;
-  BleEvt_t  evt;
-} BleEvtSerial_t;
-
-/**
-  * Event type
-  */
-
-/**
-  * This the payload of TL_Evt_t for a command complete event
-  */
-typedef __PACKED_STRUCT
-{
-  uint8_t   numcmd;
-  uint16_t  cmdcode;
-  uint8_t   payload[1];
-} TL_CcEvt_t;
-
-/**
-  * LHCI Command Types
-  */
-
-typedef __PACKED_STRUCT
-{
-  uint16_t   cmdcode;
-  uint8_t   plen;
-  uint8_t   payload[255];
-} BleCmd_t;
-
-typedef __PACKED_STRUCT
-{
-  uint8_t   type;
-  BleCmd_t  cmd;
-} BleCmdSerial_t;
-
-/* USER CODE BEGIN ET */
+/* HCI Packet structure for BLE stack communication */
 #define HCI_PACKET_MAX_SIZE     315
 #define HCI_PACKET_NUM          16
+
 typedef struct
 {
-    tListNode node;
-
     uint16_t  length;
     uint8_t   buf[HCI_PACKET_MAX_SIZE];
 } HCI_Packet_t;
-/* USER CODE END ET */
+
+/* BLE Status return type */
 
 /* Exported constants --------------------------------------------------------*/
-#define TL_LOCCMD_PKT_TYPE             ( 0x20 )
-#define TL_LOCRSP_PKT_TYPE             ( 0x21 )
-#define TL_EVT_CS_PAYLOAD_SIZE         ( 4 )
 /* USER CODE BEGIN EC */
 
 /* USER CODE END EC */
@@ -127,7 +72,7 @@ uint16_t HCI_GetEventCount(void);
 uint16_t HCI_GetFreePacketCount(void);
 uint8_t *HCI_GetPacketData(HCI_Packet_t *packet);
 uint16_t HCI_GetPacketLength(HCI_Packet_t *packet);
-tBleStatus HCI_SendPacket(HCI_Packet_t *packet);
+int HCI_SendPacket(HCI_Packet_t *packet);
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

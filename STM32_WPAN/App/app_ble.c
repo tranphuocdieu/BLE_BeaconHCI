@@ -47,60 +47,12 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-typedef enum
-{
-  LOW_POWER_MODE_DISABLE,
-  LOW_POWER_MODE_STOP,
-  LOW_POWER_MODE_STDBY,
-} LowPowerModeStatus_t;
-
 /* USER CODE END PTD */
 
 /* Maximum size of data buffer (Rx or Tx) */
 #define HCI_DATA_MAX_SIZE         315
-#define NUM_OF_TX_SYNCHRO         2
-#define NUM_OF_TX_ASYNCHRO        50
-#define NUM_OF_RX_BUFFER          12
-#define NUM_OF_TX_BUFFER           (NUM_OF_TX_ASYNCHRO + NUM_OF_TX_SYNCHRO)
-typedef struct
-{
-  tListNode                 node;  /* Actual node in the list */
-  uint8_t buf[HCI_DATA_MAX_SIZE];  /* Memory buffer */
-} UART_node;
-
-/* Global variables structure */
-typedef struct
-{
-  volatile uint8_t tm_tx_on;
-  uint8_t  rx_state;
-  uint8_t  rxReceivedState;
-  UART_node buff_node[NUM_OF_RX_BUFFER+NUM_OF_TX_BUFFER];
-} HciTransport_var_t;
 
 /* Private defines -----------------------------------------------------------*/
-/* GATT buffer size (in bytes)*/
-
-
-#define MBLOCK_COUNT              (BLE_MBLOCKS_CALC(PREP_WRITE_LIST_SIZE, \
-                                                    CFG_BLE_ATT_MTU_MAX, \
-                                                    CFG_BLE_NUM_LINK) \
-                                   + CFG_BLE_MBLOCK_COUNT_MARGIN)
-
-#define BLE_DYN_ALLOC_SIZE \
-        (BLE_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, MBLOCK_COUNT, (CFG_BLE_EATT_BEARER_PER_LINK * CFG_BLE_NUM_LINK)))
-
-/* 2 words are reserved for SNVMA management */
-
-#define BLE_DEFAULT_PIN            (111111) /* Default PIN code for pairing */
-
-/* Definitions for "tm_rx_state" */
-#define HCI_RX_STATE_WAIT_TYPE    0
-#define HCI_RX_STATE_WAIT_HEADER  1
-#define HCI_RX_STATE_WAIT_PAYLOAD 2
-
-/* Definition for "hci_event_type" */
-#define HCI_EVENT_SYNCHRO         0
-#define HCI_EVENT_ASYNCHRO        1
 
 /* USER CODE BEGIN PD */
 
@@ -114,10 +66,6 @@ typedef struct
 /* Private variables ---------------------------------------------------------*/
 static BleStack_init_t pInitParams;
 /* USER CODE BEGIN PV */
-#if (CFG_LPM_LEVEL != 0)
-static LowPowerModeStatus_t LowPowerModeStatus;
-#endif /* (CFG_LPM_LEVEL != 0) */
-
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
@@ -214,13 +162,20 @@ static uint8_t HOST_BLE_Init(void)
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */
 
-/* Packet memory */
-static HCI_Packet_t HCI_PacketPoolMem[HCI_PACKET_NUM];
+/* Internal wrapper structure combining packet with list node */
+typedef struct
+{
+    tListNode node;
+    HCI_Packet_t packet;
+} HCI_PacketWrapper_t;
 
-/* Free packet list */
-static tListNode HCI_PacketPool;
+/* Packet memory pool */
+static HCI_PacketWrapper_t HCI_PacketPoolMem[HCI_PACKET_NUM];
 
-/* Received event list */
+/* Free packet pool (linked list) */
+static tListNode HCI_FreePacketPool;
+
+/* Received event queue (linked list) */
 static tListNode HCI_EventQueue;
 
 /**
@@ -228,19 +183,20 @@ static tListNode HCI_EventQueue;
  */
 void HCI_PoolInit(void)
 {
-    LST_init_head(&HCI_PacketPool);
+    uint32_t i;
+
+    /* Initialize list heads */
+    LST_init_head(&HCI_FreePacketPool);
     LST_init_head(&HCI_EventQueue);
 
-    for (uint32_t i = 0; i < HCI_PACKET_NUM; i++)
+    /* Add all packets to free pool */
+    for (i = 0; i < HCI_PACKET_NUM; i++)
     {
-        HCI_PacketPoolMem[i].length = 0;
-
-        memset(HCI_PacketPoolMem[i].buf,
-               0,
-               HCI_DATA_MAX_SIZE);
+        HCI_PacketPoolMem[i].packet.length = 0;
+        memset(HCI_PacketPoolMem[i].packet.buf, 0, HCI_DATA_MAX_SIZE);
 
         LST_insert_tail(
-            &HCI_PacketPool,
+            &HCI_FreePacketPool,
             (tListNode *)&HCI_PacketPoolMem[i]);
     }
 }
@@ -250,29 +206,27 @@ void HCI_PoolInit(void)
  */
 HCI_Packet_t *HCI_AllocPacket(void)
 {
-    HCI_Packet_t *packet = NULL;
+    HCI_PacketWrapper_t *wrapper = NULL;
 
     os_disable_isr();
 
-    if (LST_get_size(&HCI_PacketPool) != 0)
+    if (LST_get_size(&HCI_FreePacketPool) != 0)
     {
         LST_remove_head(
-            &HCI_PacketPool,
-            (tListNode **)&packet);
+            &HCI_FreePacketPool,
+            (tListNode **)&wrapper);
     }
 
     os_enable_isr();
 
-    if (packet != NULL)
+    if (wrapper != NULL)
     {
-        packet->length = 0;
-
-        memset(packet->buf,
-               0,
-               HCI_DATA_MAX_SIZE);
+        wrapper->packet.length = 0;
+        memset(wrapper->packet.buf, 0, HCI_DATA_MAX_SIZE);
+        return &wrapper->packet;
     }
 
-    return packet;
+    return NULL;
 }
 
 /**
@@ -280,22 +234,24 @@ HCI_Packet_t *HCI_AllocPacket(void)
  */
 void HCI_FreePacket(HCI_Packet_t *packet)
 {
+    HCI_PacketWrapper_t *wrapper;
+
     if (packet == NULL)
     {
         return;
     }
 
-    packet->length = 0;
+    /* Get wrapper from packet address */
+    wrapper = (HCI_PacketWrapper_t *)((uint8_t *)packet - offsetof(HCI_PacketWrapper_t, packet));
 
-    memset(packet->buf,
-           0,
-           HCI_DATA_MAX_SIZE);
+    packet->length = 0;
+    memset(packet->buf, 0, HCI_DATA_MAX_SIZE);
 
     os_disable_isr();
 
     LST_insert_tail(
-        &HCI_PacketPool,
-        (tListNode *)packet);
+        &HCI_FreePacketPool,
+        (tListNode *)wrapper);
 
     os_enable_isr();
 }
@@ -305,16 +261,21 @@ void HCI_FreePacket(HCI_Packet_t *packet)
  */
 void HCI_QueueEvent(HCI_Packet_t *packet)
 {
+    HCI_PacketWrapper_t *wrapper;
+
     if (packet == NULL)
     {
         return;
     }
 
+    /* Get wrapper from packet address */
+    wrapper = (HCI_PacketWrapper_t *)((uint8_t *)packet - offsetof(HCI_PacketWrapper_t, packet));
+
     os_disable_isr();
 
     LST_insert_tail(
         &HCI_EventQueue,
-        (tListNode *)packet);
+        (tListNode *)wrapper);
 
     os_enable_isr();
 }
@@ -324,7 +285,7 @@ void HCI_QueueEvent(HCI_Packet_t *packet)
  */
 HCI_Packet_t *HCI_GetEvent(void)
 {
-    HCI_Packet_t *packet = NULL;
+    HCI_PacketWrapper_t *wrapper = NULL;
 
     os_disable_isr();
 
@@ -332,12 +293,17 @@ HCI_Packet_t *HCI_GetEvent(void)
     {
         LST_remove_head(
             &HCI_EventQueue,
-            (tListNode **)&packet);
+            (tListNode **)&wrapper);
     }
 
     os_enable_isr();
 
-    return packet;
+    if (wrapper != NULL)
+    {
+        return &wrapper->packet;
+    }
+
+    return NULL;
 }
 
 /**
@@ -348,9 +314,7 @@ uint16_t HCI_GetEventCount(void)
     uint16_t count;
 
     os_disable_isr();
-
     count = LST_get_size(&HCI_EventQueue);
-
     os_enable_isr();
 
     return count;
@@ -364,9 +328,7 @@ uint16_t HCI_GetFreePacketCount(void)
     uint16_t count;
 
     os_disable_isr();
-
-    count = LST_get_size(&HCI_PacketPool);
-
+    count = LST_get_size(&HCI_FreePacketPool);
     os_enable_isr();
 
     return count;
@@ -392,13 +354,13 @@ uint16_t HCI_GetPacketLength(HCI_Packet_t *packet)
     return packet->length;
 }
 
-tBleStatus HCI_SendPacket(HCI_Packet_t *packet)
+int HCI_SendPacket(HCI_Packet_t *packet)
 {
     uint16_t response_length;
 
     if (packet == NULL)
     {
-        return BLE_STATUS_FAILED;
+        return (int)BLE_STATUS_FAILED;
     }
 
     response_length = BleStack_Request(packet->buf);
@@ -406,14 +368,14 @@ tBleStatus HCI_SendPacket(HCI_Packet_t *packet)
     if (response_length == 0)
     {
         HCI_FreePacket(packet);
-        return BLE_STATUS_FAILED;
+        return (int)BLE_STATUS_FAILED;
     }
 
     packet->length = response_length;
 
     HCI_QueueEvent(packet);
 
-    return BLE_STATUS_SUCCESS;
+    return (int)BLE_STATUS_SUCCESS;
 }
 
 /**
