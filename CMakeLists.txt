@@ -54,8 +54,11 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/bs_gcc_stm32wba62_bk/hal/btstack_hal.c"
     "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/bs_gcc_stm32wba62_bk/hal/btstack_systemapi.c"
     "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/bs_gcc_stm32wba62_bk/hal/hal_time_ms.c"
+    "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/bs_gcc_stm32wba62_bk/hal/btstack_hal_uart.c"
+    "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/bs_gcc_stm32wba62_bk/hal/btstack_hal_gpio.c"
+    "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/bs_gcc_stm32wba62_bk/hal/btstack_hal_timers.c"
     "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/bs_gcc_stm32wba62_bk/ame/imageexternalflash_c_api.cpp"
-    # "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/bs_gcc_stm32wba62_bk/ame/radioutils.c"
+    "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/bs_gcc_stm32wba62_bk/ame/radioutils.c"
     "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/bs_gcc_stm32wba62_bk/ame/bt_firmware_embedded_CY20706A2_MERCURY.c"
 )
 
@@ -63,6 +66,8 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
     "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/bs_gcc_stm32wba62_bk/api/"
+    "${CMAKE_SOURCE_DIR}/Middlewares/bt-drv-lib/Platform/bs_gcc_stm32wba62_bk/ame/"
+    
 )
 
 # Add project symbols (macros)

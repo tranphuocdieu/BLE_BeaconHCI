@@ -256,7 +256,7 @@ void HCI_FreePacket(HCI_Packet_t *packet)
         (tListNode *)wrapper);
 
     os_enable_isr();
-    RF_BTSTACK_RUN_LOOP_EMBEDDED_ISR_POLL();
+    // RF_BTSTACK_RUN_LOOP_EMBEDDED_ISR_POLL();
 }
 
 /**
