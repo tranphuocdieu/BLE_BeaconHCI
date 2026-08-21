@@ -43,6 +43,8 @@
 #include "stm32_lpm.h"
 #include "stm32_lpm_if.h"
 
+#include "btstack_interface.h"
+#include "btstack_hal.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -254,6 +256,7 @@ void HCI_FreePacket(HCI_Packet_t *packet)
         (tListNode *)wrapper);
 
     os_enable_isr();
+    RF_BTSTACK_RUN_LOOP_EMBEDDED_ISR_POLL();
 }
 
 /**
@@ -360,7 +363,7 @@ int HCI_SendPacket(HCI_Packet_t *packet)
 
     if (packet == NULL)
     {
-        return (int)BLE_STATUS_FAILED;
+        return -1;
     }
 
     response_length = BleStack_Request(packet->buf);
@@ -368,14 +371,14 @@ int HCI_SendPacket(HCI_Packet_t *packet)
     if (response_length == 0)
     {
         HCI_FreePacket(packet);
-        return (int)BLE_STATUS_FAILED;
+        return -1;
     }
 
     packet->length = response_length;
 
     HCI_QueueEvent(packet);
 
-    return (int)BLE_STATUS_SUCCESS;
+    return 0;
 }
 
 /**
